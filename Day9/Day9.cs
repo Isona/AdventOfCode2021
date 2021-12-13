@@ -62,14 +62,14 @@ public class HeightMap
 
     public Boolean isLowPoint(Coordinate coord)
     {
-        int currentValue = points[coord.x, coord.y];
+        int currentValue = getValue(coord);
         List<Coordinate> adjacentPoints = getAdjacent(coord);
 
         bool lowPoint = true;
         foreach (Coordinate point in adjacentPoints)
         {
-            int adjValue = points[point.x, point.y];
-            if (adjValue < currentValue)
+            int adjValue = getValue(point);
+            if (adjValue <= currentValue)
             {
                 lowPoint = false;
                 break;
@@ -82,7 +82,7 @@ public class HeightMap
     public Boolean isInBounds(Coordinate coord)
     {
         return coord.x >= 0 && coord.y >= 0 && 
-            coord.x < points.GetLength(0) && coord.y < points.GetLength(1);
+            coord.x < this.xLength && coord.y < this.yLength;
     }
 
     public List<Coordinate> getAdjacent(Coordinate coord)
