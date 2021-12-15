@@ -4,9 +4,14 @@ string[] lines = File.ReadAllLines(@"Day9Input.txt");
 HeightMap inputMap = new HeightMap(lines);
 
 Console.WriteLine("Part 1");
-part1(inputMap);
+List<Coordinate> lowPoints = part1(inputMap);
 
-void part1(HeightMap inputMap)
+Console.WriteLine();
+
+Console.WriteLine("Part 2");
+part2(inputMap, lowPoints);
+
+List<Coordinate> part1(HeightMap inputMap)
 {
 
     List<Coordinate> lowPoints = new List<Coordinate>();
@@ -30,6 +35,24 @@ void part1(HeightMap inputMap)
     }
 
     Console.WriteLine(lowPointSum);
+
+    return lowPoints;
+}
+
+void part2(HeightMap inputMap, List<Coordinate> lowPoints)
+{
+    List<int> basinSizes = new List<int>();
+
+    foreach (Coordinate currentLowPoint in lowPoints)
+    {
+        basinSizes.Add(inputMap.getBasinSize(currentLowPoint));
+    }
+
+    basinSizes.Sort();
+    basinSizes.Reverse();
+
+    int score = basinSizes[0] * basinSizes[1] * basinSizes[2];
+    Console.WriteLine(score);
 }
 
 public class HeightMap
@@ -116,6 +139,33 @@ public class HeightMap
         return adjacentPoints;
         
     }
+
+    public int getBasinSize(Coordinate coord)
+    {
+        Queue<Coordinate> pointsToScan = new Queue<Coordinate>();
+        pointsToScan.Enqueue(coord);
+
+        List<Coordinate> scannedPoints = new List<Coordinate>();
+        int basinSize = 1;
+
+        while(pointsToScan.Count > 0)
+        {
+            Coordinate currentPoint = pointsToScan.Dequeue();
+            List<Coordinate> adjacentPoints = getAdjacent(currentPoint);
+            scannedPoints.Add(currentPoint);
+
+            foreach(Coordinate adjPoint in adjacentPoints)
+            {
+                if (getValue(adjPoint) != 9 && !scannedPoints.Contains(adjPoint) && !pointsToScan.Contains(adjPoint))
+                {
+                    basinSize++;
+                    pointsToScan.Enqueue(adjPoint);
+                }
+            }
+        }
+
+        return basinSize;
+    }
 }
 
 public class Coordinate
@@ -127,5 +177,19 @@ public class Coordinate
     {
         x = inX;
         y = inY;
+    }
+
+    public override bool Equals(Object obj)
+    {
+        //Check for null and compare run-time types.
+        if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+        {
+            return false;
+        }
+        else
+        {
+            Coordinate p = (Coordinate)obj;
+            return x == p.x && y == p.y;
+        }
     }
 }
