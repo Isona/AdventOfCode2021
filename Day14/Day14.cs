@@ -1,4 +1,4 @@
-﻿string[] lines = File.ReadAllLines(@"Day14TestInput.txt");
+﻿string[] lines = File.ReadAllLines(@"Day14Input.txt");
 
 List<PolymerRule> rules = new List<PolymerRule>();
 for(int i = 2; i < lines.Length; i++)
@@ -10,10 +10,15 @@ for(int i = 2; i < lines.Length; i++)
 Console.WriteLine("Part 1");
 doPart(10, lines[0], rules);
 
+Console.WriteLine("");
+
+// Do part 2
+Console.WriteLine("Part 2");
+doPart(40, lines[0], rules);
 
 void doPart(int roundCount, string initialString, List<PolymerRule> rules)
 {
-    Dictionary<string, int> currentIter = createFreshSet(rules);
+    Dictionary<string, long> currentIter = createFreshSet(rules);
     for (int j = 0; j < initialString.Length - 1; j++)
     {
         currentIter[Char.ToString(lines[0][j]) + Char.ToString(lines[0][j + 1])]++;
@@ -24,37 +29,69 @@ void doPart(int roundCount, string initialString, List<PolymerRule> rules)
         currentIter = doIteration(rules, currentIter);
     }
 
-    printScore(currentIter);
+    printScore(currentIter, initialString);
 }
 
 
 // TODO: Write properly
-void printScore(Dictionary<string, int> pairList)
+void printScore(Dictionary<string, long> pairList, string initialString)
 {
-    int maxCount = 0;
-    int minCount = Int32.MaxValue;
-    foreach (KeyValuePair<string, int> entry in pairList)
+    Dictionary<char, long> elementCount = new Dictionary<char, long>();
+
+    foreach (KeyValuePair<string, long> entry in pairList)
     {
-        if (entry.Value > maxCount)
+        if (!elementCount.ContainsKey(entry.Key[0]))
         {
-            maxCount = entry.Value;
+            elementCount.Add(entry.Key[0], 0);
         }
-        if (entry.Value < minCount)
+
+        elementCount[entry.Key[0]] += entry.Value;
+
+        if (!elementCount.ContainsKey(entry.Key[1]))
         {
-            minCount = entry.Value;
+            elementCount.Add(entry.Key[1], 0);
+        }
+
+        elementCount[entry.Key[1]] += entry.Value;
+    }
+
+    elementCount[initialString[0]] += 1;
+    elementCount[initialString[initialString.Length - 1]] += 1;
+
+    foreach (KeyValuePair<char, long> entry in elementCount)
+    {
+        elementCount[entry.Key] = entry.Value / 2;
+    }
+
+    long leastCommon = long.MaxValue;
+    long mostCommon = 0;
+
+    foreach (KeyValuePair<char, long> entry in elementCount)
+    {
+        Console.WriteLine(entry.Key + ": " + entry.Value);
+        if (entry.Value < leastCommon)
+        {
+            leastCommon = entry.Value;
+        }
+
+        if (entry.Value > mostCommon)
+        {
+            mostCommon = entry.Value;
         }
     }
 
-    Console.WriteLine()
+    Console.WriteLine("Most common: " + mostCommon);
+    Console.WriteLine("Least common: " + leastCommon);
+    Console.WriteLine(mostCommon - leastCommon);
 }
 
-Dictionary<string, int> doIteration(List<PolymerRule> rules, Dictionary<string, int> previousIter)
+Dictionary<string, long> doIteration(List<PolymerRule> rules, Dictionary<string, long> previousIter)
 {
-    Dictionary<string, int> currentIter = createFreshSet(rules);
+    Dictionary<string, long> currentIter = createFreshSet(rules);
 
     for (int i = 0; i < rules.Count; i++)
     {
-        int prevCount = previousIter[rules[i].input];
+        long prevCount = previousIter[rules[i].input];
         currentIter[rules[i].output1] += prevCount;
         currentIter[rules[i].output2] += prevCount;
     }
@@ -62,9 +99,9 @@ Dictionary<string, int> doIteration(List<PolymerRule> rules, Dictionary<string, 
     return currentIter;
 }
 
-Dictionary<string, int> createFreshSet(List<PolymerRule> rules)
+Dictionary<string, long> createFreshSet(List<PolymerRule> rules)
 {
-    Dictionary<String, int> pairs = new Dictionary<String, int>();
+    Dictionary<String, long> pairs = new Dictionary<String, long>();
     for (int i = 0; i < rules.Count; i++)
     {
         pairs.Add(rules[i].input, 0);
